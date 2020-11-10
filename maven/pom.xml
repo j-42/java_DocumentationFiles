@@ -1,48 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>fr.jasmine-morvan.com</groupId>
-  <artifactId>junitmavenproject</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
-  	<!-- Indiquer l'encodage et le projet en Java 11 -->
+	<!-- https://maven.apache.org/guides/introduction/introduction-to-the-pom.html -->
+	<!-- https://maven.apache.org/pom.html -->
+	<!-- =============================================================== -->
+	<!-- Informations du projet -->
+	<!-- =============================================================== -->
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.jasmine_morvan</groupId>
+	<artifactId>JAZ APP</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<!-- ===== Informations générales ===== -->
+	<name>JAZ APP</name>
+	<description>Description</description>
+	<url>http://URL.com</url>
+	<!-- ===== Organisation ===== -->
+	<organization>
+		<name>Entreprise</name>
+		<url>http://www.exemple.org</url>
+	</organization>
+	<!-- ===== Licences ===== -->
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<!-- =====  PROPRIETES ===== -->
+	<!-- propriétés pré-définies : https://maven.apache.org/guides/introduction/introduction-to-the-pom.html#Available_Variables -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>15</maven.compiler.source>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<!-- java 8 -->
 		<maven.compiler.target>${maven.compiler.source}</maven.compiler.target>
+		<maven.build.timestamp.format>dd/MM/yyyy</maven.build.timestamp.format>
+		<build.timestamp>${maven.build.timestamp}</build.timestamp>
+		<version>${project.version}</version>
+		<application.name>${project.name}</application.name>
 	</properties>
-  <dependencies><!-- Ajouter la balise <dependencies> avant d'inserer les dépendences -->
-  
-  	 <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter -->
-  	<dependency>
-	    <groupId>org.junit.jupiter</groupId>
-	    <artifactId>junit-jupiter</artifactId>
-	    <version>5.5.1</version>
-	    <scope>test</scope>
-	</dependency>
-	
-	<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
-	<dependency>
-	    <groupId>org.apache.maven.plugins</groupId>
-	    <artifactId>maven-surefire-plugin</artifactId>
-	    <version>2.22.2</version>
-	</dependency>
-	
-  </dependencies>
+	<!-- =============================================================== -->
+	<!-- Profils -->
+	<!-- https://maven.apache.org/guides/introduction/introduction-to-profiles.html -->
+	<!-- =============================================================== -->
+	<profiles>
+		<!-- Profil pour dev-->
+		<profile>
+			<id>dev</id>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources/conf-test</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+		<!-- Profil pour l'environnement de test -->
+		<profile>
+			<id>test</id>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources/conf-test</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+		<!-- Profil pour l'environnement de production -->
+		<profile>
+			<id>prod</id>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources/conf-prod</directory>
+						<filtering>true</filtering>
+					</resource>
+				</resources>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-enforcer-plugin</artifactId>
+						<version>3.0.0-M3</version>
+						<executions>
+							<execution>
+								<id>enforce-prod-version-in-prod</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>enforce</goal>
+								</goals>
+								<configuration>
+									<rules>
+										<requireReleaseVersion>
+											<message>No Snapshots Allowed in prod!</message>
+										</requireReleaseVersion>
+									</rules>
+									<fail>true</fail>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+	<!-- =============================================================== -->
+	<!-- DEPENDENCES -->
+	<!-- =============================================================== -->
+	<dependencies>
+		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.5.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<!-- =============================================================== -->
+	<!-- BUILD -->
+	<!-- =============================================================== -->
+	<build>
+		<directory>${project.basedir}/target</directory>
+		<!-- ASSEMBLY -->
+		<pluginManagement>
+			<!-- To define the plugin version in the parent POM -->
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.3.0</version>
+					<configuration>
+						<descriptors>
+							<descriptor>src/assembly/make-assembly.xml</descriptor>
+						</descriptors>
+					</configuration>
+					<executions>
+						<execution>
+							<id>make-assembly</id>
+							<!-- this is used for inheritance merges -->
+							<phase>package</phase>
+							<!-- bind to the packaging phase -->
+							<goals>
+								<goal>single</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<!-- Adding and Filtering External Web Resources-->
+			<!-- Permet d'ajouer ddes propriétés aux jsp : <a>${application.name}</a> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.3.1</version>
+				<configuration>
+					<webResources>
+						<resource>
+							<!-- this is relative to the pom.xml directory -->
+							<directory>src/main/webapp</directory>
+							<!-- by Default -->
+							<filtering>true</filtering>
+							<!-- the list has a default value of ** -->
+							<includes>
+								<include>jsp/include/*.jsp</include>
+								<!-- the list has a default value of ** -->
+								<include>jsp/somethingElse.stuff</include>
+							</includes>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
-
-  <!-- 
-  The Surefire Plugin is used during the test phase of the build lifecycle to execute the unit tests of an application. It generates reports in two different file formats:
-
-	Plain text files (*.txt)
-	XML files (*.xml)
-	By default, these files are generated in ${basedir}/target/surefire-reports/TEST-*.xml.
-	
-	The schema for the Surefire XML reports is available at Surefire XML Report Schema.
-	
-	The XML reports generated by legacy plugins (versions up to 2.22.0) should be validated by Legacy Surefire XML Report Schema.
-	
-	Two plugin versions (2.22.1 and 3.0.0-M1) however generate 3.0 XML reports they still refer to legacy schema (see noNamespaceSchemaLocation in XML Report). The projects which expect XML Reports validated by XSD Schema, tools e.g xUnit, should not use versions 2.22.1 and 3.0.0-M1 of the Surefire plugin.
-	
-	For an HTML format of the report, please see the Maven Surefire Report Plugin.
-   -->
-  
